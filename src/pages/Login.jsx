@@ -1,6 +1,6 @@
 
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useRef, useState } from 'react';
 import { auth } from '../fairbase.init';
 import { IoEye } from 'react-icons/io5';
 import { GoEyeClosed } from "react-icons/go";
@@ -8,9 +8,10 @@ import { GoEyeClosed } from "react-icons/go";
 const Login = () => {
 
     const [error, setError] = useState('')
-        const [successLogin, setSuccessLogin] = useState(false)
-        const [showPassword,setShowPassword]=useState(false)
-        console.log(showPassword)
+    const [successLogin, setSuccessLogin] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const emailRef=useRef()
+    console.log(showPassword)
 
 
     const handleLogin = (e) => {
@@ -18,7 +19,7 @@ const Login = () => {
         const email = e.target.email.value
         const password = e.target.password.value
 
-        
+
         setSuccessLogin(false)
         setError('')
 
@@ -28,16 +29,51 @@ const Login = () => {
         signInWithEmailAndPassword(auth, email, password)
 
             .then((result) => {
-                setSuccessLogin(result.user)
-              
+
+                console.log(result.user)
+
+                // for verify email start
+                if (!result.user.emailVerified) {
+                    setError('Please verified your email')
+                }
+                else {
+
+                    setSuccessLogin(result.user)
+                }
+
+                // for verify email end
             })
             .catch((error) => {
                 setError('Invalid your password and email')
                 setSuccessLogin(false)
-                
+
             })
 
     }
+
+
+// for forget password start 
+const handleForgetPassword=()=>{
+const email=emailRef.current.value
+
+if(!email){
+    alert('pleaser provide a valid email address')
+    return;
+}
+else{
+    sendPasswordResetEmail(auth,email)
+    alert('Resert password send your email ,please check it')
+    .then(()=>{
+
+    })
+    .catch(()=>{
+        
+    })
+}
+}
+// for forget password end
+
+
     return (
         <div className="hero bg-base-200 mt-10">
             <div className="hero-content w-8/12 flex-col lg:flex-row-reverse">
@@ -54,20 +90,20 @@ const Login = () => {
                             <label className="label">
                                 <span className="label-text">Email</span>
                             </label>
-                            <input type="email" placeholder="email" name='email' className="input input-bordered" required />
+                            <input type="email" placeholder="email" name='email' className="input input-bordered" required ref={emailRef}/>
                         </div>
                         <div className="form-control relative">
                             <label className="label">
                                 <span className="label-text">Password</span>
                             </label>
-                            <input type={showPassword ?'text': 'password'} placeholder="password" name='password' className="input input-bordered" required />
+                            <input type={showPassword ? 'text' : 'password'} placeholder="password" name='password' className="input input-bordered" required />
                             <label className="label">
                                 {
-                                    showPassword ? <button type='button' onClick={()=>setShowPassword(false)} className='absolute right-2 top-[50px]'><GoEyeClosed/></button>
-                                    :
-                                    <button type='button' onClick={()=>setShowPassword(true)} className='absolute right-2 top-[50px]'><IoEye></IoEye></button>
+                                    showPassword ? <GoEyeClosed type='button' onClick={() => setShowPassword(false)} className='absolute right-2 top-[50px]' />
+                                        :
+                                        <IoEye type='button' onClick={() => setShowPassword(true)} className='absolute right-2 top-[50px]'></IoEye>
                                 }
-                                <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                                <a href="#" onClick={handleForgetPassword} className="label-text-alt link link-hover">Forgot password?</a>
                             </label>
                         </div>
                         {

@@ -1,5 +1,5 @@
 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { auth } from '../fairbase.init';
 import { IoEye } from 'react-icons/io5';
@@ -12,10 +12,12 @@ const Singup = () => {
 
   const handleSubmitForm = (event) => {
     event.preventDefault()
+    const name=event.target.name.value
+    const photo=event.target.photo.value
     const email = event.target.email.value
     const password = event.target.password.value
     const checkbox=event.target.terms.checked
-    console.log(email,password,checkbox)
+    console.log(email,password,name,photo)
     // create a email and password metho start
     setSuccess(false)
 
@@ -38,11 +40,29 @@ if(!checkbox){
     }
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
-        console.log(result.user)
+  
         setSuccess(true)
         setError('')
 
+        sendEmailVerification(auth.currentUser)
+        .then(()=>{
+          console.log('veriry email send')
+        })
+
       })
+      // update profile start
+      const profile={
+      displayName:name,
+      photoURL:photo
+      }
+      updateProfile(auth.currentUser,profile)
+      .then(()=>{
+
+      })
+      .catch(()=>{
+
+      })
+      // updae profile end
 
       .catch(error => {
         console.log('error', error.message)
@@ -59,6 +79,18 @@ if(!checkbox){
 
         <div className="card bg-red-950 w-full max-w-sm shrink-0 shadow-2xl">
           <form onSubmit={handleSubmitForm} className="card-body">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
+              <input type="text" name='name' placeholder="Name" className="input input-bordered" required />
+            </div>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Email</span>
+              </label>
+              <input type="text" name='photo' placeholder="Photo url" className="input input-bordered" required />
+            </div>
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Email</span>
